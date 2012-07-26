@@ -1,7 +1,7 @@
-upstream domain1 {
-        server 0.0.0.0:3000;
-        server 0.0.0.0:3001;
-        server 0.0.0.0:3002;
+upstream domain2 {
+        server 0.0.0.0:3003;
+        server 0.0.0.0:3004;
+        server 0.0.0.0:3005;
     }
 
 server {
@@ -29,7 +29,7 @@ server {
                           }
 
                           if (!-f $request_filename) {
-                                           proxy_pass http://domain1;
+                                           proxy_pass http://domain2;
                                            break;
                           }
             }
