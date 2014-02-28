@@ -1,0 +1,67 @@
+upstream domain1 {
+        server 0.0.0.0:4000;
+        server 0.0.0.0:4001;
+        server 0.0.0.0:4002;
+    }
+
+client_max_body_size 50m;
+
+server {
+            listen   80;
+            server_name localhost;
+
+            access_log /home/jamesh/public_html/silvercore/log/access.log;
+            error_log /home/jamesh/public_html/silvercore/log/error.log;
+
+            root   /home/jamesh/public_html/silvercore/public/;
+
+            client_max_body_size 20M;
+
+            location / {
+                          proxy_set_header  X-Real-IP  $remote_addr;
+                          proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
+                          proxy_set_header Host $http_host;
+                          proxy_redirect off;
+
+
+
+                          if (-f $request_filename.html) {
+                                           rewrite (.*) $1.html break;
+                          }
+
+                          if (!-f $request_filename) {
+                                           proxy_pass http://domain1;
+                                           break;
+                         }
+            }
+
+}
+
+server {
+            listen   443;
+            server_name localhost;
+
+            ssl on;
+            ssl_certificate /etc/ssl/certs/secure_cert_nginx.crt;
+            ssl_certificate_key /etc/ssl/private/secure_cert_nginx.key;
+
+            access_log /home/jamesh/public_html/silvercore/log/ssl_access.log;
+            error_log /home/jamesh/public_html/silvercore/log/ssl_error.log;
+
+            root   /home/jamesh/public_html/silvercore/public/;
+            index  index.html;
+
+            location / {
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-Proto https;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header Host $http_host;
+
+                if (!-f $request_filename) {
+                        proxy_pass http://domain1;
+                        break;
+                }
+
+        }
+
+}
